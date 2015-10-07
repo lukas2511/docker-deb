@@ -6,6 +6,19 @@ import subprocess
 sys.path.append("/etc/firewall")
 from ports import ports
 
+found_docker_rules = False
+for line in subprocess.check_output(["iptables","-S"]).splitlines():
+    if '-N DOCKER' in line:
+        found_docker_rules = True
+
+if not found_docker_rules:
+    subprocess.check_output(["iptables", "-N", "DOCKER"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-o", "docker0", "-j", "DOCKER"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-o", "docker0", "-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "ACCEPT"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-i", "docker0", "!", "-o", "docker0", "-j", "ACCEPT"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-i", "docker0", "-o", "docker0", "-j", "ACCEPT"])
+    subprocess.check_output(["iptables", "-t", "nat", "-A", "POSTROUTING", "-s", "172.17.0.0/16", "!", "-o", "docker0", "-j", "MASQUERADE"])
+
 existing_rules = {}
 existing_rules['iptables'] = subprocess.check_output(["iptables","-t","nat","-S","PREROUTING"]).splitlines()
 existing_rules['ip6tables'] = subprocess.check_output(["ip6tables","-t","nat","-S","PREROUTING"]).splitlines()
