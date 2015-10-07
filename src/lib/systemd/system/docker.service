@@ -1,0 +1,17 @@
+[Unit]
+Description=Docker Application Container Engine
+Documentation=http://docs.docker.com
+After=network.target docker.socket
+Requires=docker.socket
+
+[Service]
+ExecStartPre=/sbin/ip6tables -t nat -A POSTROUTING -o br0 -s fd42::/64 -j MASQUERADE
+ExecStart=/usr/bin/docker daemon -H fd:// --ipv6 --fixed-cidr-v6="fd42::/64" --iptables=false
+ExecStopPost=/sbin/ip6tables -t nat -D POSTROUTING -o br0 -s fd42::/64 -j MASQUERADE
+MountFlags=slave
+LimitNOFILE=1048576
+LimitNPROC=1048576
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+# Automatically added by dh_installudev
+if [ "$1" = install ] || [ "$1" = upgrade ]; then
+	if [ -e "/etc/udev/rules.d/z80_docker.io.rules" ]; then
+		if [ "`md5sum \"/etc/udev/rules.d/z80_docker.io.rules\" | sed -e \"s/ .*//\"`" = \
+		     "`dpkg-query -W -f='${Conffiles}' docker.io | sed -n -e \"\\\\' /etc/udev/rules.d/z80_docker.io.rules '{s/ obsolete$//;s/.* //p}\"`" ]
+		then
+			rm -f "/etc/udev/rules.d/z80_docker.io.rules"
+		fi
+	fi
+fi
+# End automatically added section
+# Automatically added by dh_installdeb
+dpkg-maintscript-helper mv_conffile /etc/bash_completion.d/docker.io /etc/bash_completion.d/docker 1.2.0~ -- "$@"
+# End automatically added section
+# Automatically added by dh_installdeb
+dpkg-maintscript-helper mv_conffile /etc/default/docker.io /etc/default/docker 1.2.0~ -- "$@"
+# End automatically added section
+# Automatically added by dh_installdeb
+dpkg-maintscript-helper mv_conffile /etc/init.d/docker.io /etc/init.d/docker 1.2.0~ -- "$@"
+# End automatically added section
+# Automatically added by dh_installdeb
+dpkg-maintscript-helper mv_conffile /etc/init/docker.io.conf /etc/init/docker.conf 1.2.0~ -- "$@"
+# End automatically added section

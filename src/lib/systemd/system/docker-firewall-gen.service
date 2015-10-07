@@ -1,0 +1,10 @@
+[Unit]
+Description=Docker Firewall
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker-gen -watch -notify /usr/bin/docker-firewall.py /etc/firewall/ports.py.tpl /etc/firewall/ports.py
+
+[Install]
+WantedBy=multi-user.target

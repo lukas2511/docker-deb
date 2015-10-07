@@ -1,0 +1,29 @@
+Package: docker.io
+Version: 42
+Architecture: amd64
+Maintainer: Lukas Schauer
+Depends: adduser, iptables, init-system-helpers (>= 1.18~), perl, libapparmor1 (>= 2.6~devel), libc6 (>= 2.14), libdevmapper1.02.1 (>= 2:1.02.90), libsqlite3-0 (>= 3.5.9)
+Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
+Suggests: btrfs-tools, debootstrap, lxc, rinse
+Breaks: docker (<< 1.5~)
+Replaces: docker (<< 1.5~)
+Built-Using: glibc (= 2.19-18)
+Section: admin
+Priority: optional
+Homepage: https://dockerproject.com
+Description: Linux container runtime
+ Docker complements kernel namespacing with a high-level API which operates at
+ the process level. It runs unix processes with strong guarantees of isolation
+ and repeatability across servers.
+ .
+ Docker is a great building block for automating distributed systems:
+ large-scale web deployments, database clusters, continuous deployment systems,
+ private PaaS, service-oriented architectures, etc.
+ .
+ This package contains the daemon and client. Using docker.io on non-amd64 hosts
+ is not supported at this time. Please be careful when using it on anything
+ besides amd64.
+ .
+ Also, note that kernel version 3.8 or above is required for proper operation of
+ the daemon process, and that any lower versions may have subtle and/or glaring
+ issues.
