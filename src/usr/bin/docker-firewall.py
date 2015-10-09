@@ -10,6 +10,7 @@ if len(sys.argv) < 3:
 PUBLIC_INTERFACE = sys.argv[1]
 DOCKER_INTERFACE = sys.argv[2]
 
+sys.dont_write_bytecode = True
 sys.path.append("/etc/firewall")
 from ports import ports
 
