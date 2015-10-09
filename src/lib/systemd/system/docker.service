@@ -5,9 +5,10 @@ After=network.target docker.socket
 Requires=docker.socket
 
 [Service]
-ExecStartPre=/sbin/ip6tables -t nat -A POSTROUTING -o br0 -s fd42::/64 -j MASQUERADE
-ExecStart=/usr/bin/docker daemon -H fd:// --ipv6 --fixed-cidr-v6="fd42::/64" --iptables=false
-ExecStopPost=/sbin/ip6tables -t nat -D POSTROUTING -o br0 -s fd42::/64 -j MASQUERADE
+EnvironmentFile=-/etc/default/docker
+ExecStartPre=/sbin/ip6tables -t nat -A POSTROUTING -o $PUBLIC_INTERFACE -s $IPV6_SUBNET -j MASQUERADE
+ExecStart=/usr/bin/docker daemon -H fd:// --ipv6 --fixed-cidr-v6=${IPV6_SUBNET} --iptables=false -b $DOCKER_INTERFACE $DOCKER_OPTS
+ExecStopPost=/sbin/ip6tables -t nat -D POSTROUTING -o $PUBLIC_INTERFACE -s $IPV6_SUBNET -j MASQUERADE
 MountFlags=slave
 LimitNOFILE=1048576
 LimitNPROC=1048576

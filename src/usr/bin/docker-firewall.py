@@ -3,6 +3,13 @@
 import sys
 import subprocess
 
+if len(sys.argv) < 3:
+    print("Usage: " + sys.argv[0] + " public_interface docker_interface")
+    sys.exit(1)
+
+PUBLIC_INTERFACE = sys.argv[1]
+DOCKER_INTERFACE = sys.argv[2]
+
 sys.path.append("/etc/firewall")
 from ports import ports
 
@@ -13,11 +20,11 @@ for line in subprocess.check_output(["iptables","-S"]).splitlines():
 
 if not found_docker_rules:
     subprocess.check_output(["iptables", "-N", "DOCKER"])
-    subprocess.check_output(["iptables", "-A", "FORWARD", "-o", "docker0", "-j", "DOCKER"])
-    subprocess.check_output(["iptables", "-A", "FORWARD", "-o", "docker0", "-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "ACCEPT"])
-    subprocess.check_output(["iptables", "-A", "FORWARD", "-i", "docker0", "!", "-o", "docker0", "-j", "ACCEPT"])
-    subprocess.check_output(["iptables", "-A", "FORWARD", "-i", "docker0", "-o", "docker0", "-j", "ACCEPT"])
-    subprocess.check_output(["iptables", "-t", "nat", "-A", "POSTROUTING", "-s", "172.17.0.0/16", "!", "-o", "docker0", "-j", "MASQUERADE"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-o", DOCKER_INTERFACE, "-j", "DOCKER"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-o", DOCKER_INTERFACE, "-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "ACCEPT"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-i", DOCKER_INTERFACE, "!", "-o", DOCKER_INTERFACE, "-j", "ACCEPT"])
+    subprocess.check_output(["iptables", "-A", "FORWARD", "-i", DOCKER_INTERFACE, "-o", DOCKER_INTERFACE, "-j", "ACCEPT"])
+    subprocess.check_output(["iptables", "-t", "nat", "-A", "POSTROUTING", "-s", "172.17.0.0/16", "!", "-o", DOCKER_INTERFACE, "-j", "MASQUERADE"])
 
 existing_rules = {}
 existing_rules['iptables'] = subprocess.check_output(["iptables","-t","nat","-S","PREROUTING"]).splitlines()
@@ -27,12 +34,12 @@ mapped_ports = {'iptables': {'tcp': [], 'udp': []}, 'ip6tables': {'tcp': [], 'ud
 
 for firewall in ['iptables', 'ip6tables']:
     for rule in existing_rules[firewall]:
-        if not 'br0' in rule:
+        if not PUBLIC_INTERFACE in rule:
             continue
 
         rule = rule.split()
         interface = rule[rule.index("-i")+1]
-        if not interface == "br0":
+        if not interface == PUBLIC_INTERFACE:
             continue
 
         proto = rule[rule.index("-p")+1]
@@ -59,7 +66,7 @@ for firewall in ['iptables', 'ip6tables']:
         for port, forwarding in ports[proto].items():
             if not port in mapped_ports[firewall][proto]:
                 print("Adding " + proto + " port forwarding: " + port + " -> " + forwarding[firewall])
-                rule = ["-A", "PREROUTING", "-i", "br0", "-p", proto, "--dport", port, "-j", "DNAT", "--to-destination", forwarding[firewall]]
+                rule = ["-A", "PREROUTING", "-i", PUBLIC_INTERFACE, "-p", proto, "--dport", port, "-j", "DNAT", "--to-destination", forwarding[firewall]]
                 subprocess.check_output([firewall, "-t", "nat"] + rule)
 
 #print(ip6tables)

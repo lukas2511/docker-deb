@@ -4,7 +4,8 @@ After=network.target docker.service
 Requires=docker.service
 
 [Service]
-ExecStart=/usr/bin/docker-gen -watch -notify /usr/bin/docker-firewall.py /etc/firewall/ports.py.tpl /etc/firewall/ports.py
+EnvironmentFile=-/etc/default/docker
+ExecStart=/usr/bin/docker-gen -watch -notify "/usr/bin/docker-firewall.py ${PUBLIC_INTERFACE} ${DOCKER_INTERFACE}" /etc/firewall/ports.py.tpl /etc/firewall/ports.py
 
 [Install]
 WantedBy=multi-user.target
